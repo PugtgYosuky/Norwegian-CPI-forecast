@@ -2,6 +2,7 @@ import statsmodels.tsa.stattools as st
 import numpy as np
 import pandas as pd
 import scipy.signal as scs
+from sklearn import metrics
 
 def adf_test(ts):
     """ Dickey-Fuller (DF) unit root test """
@@ -51,3 +52,10 @@ class ConvertIntoStationary:
         self.trend_seasonal_adjusted_test = self.trend_adjusted_test - self.seasonal_ts_test
         self.trend_seasonal_adjusted_test.name = '[Test]Trend and seasonality adjusted'
         return self.trend_seasonal_adjusted_test
+    
+def metrics_summary(ts_test, preds):
+    print('MAPE:', metrics.mean_absolute_percentage_error(ts_test, preds))
+    print('MAE:', metrics.mean_absolute_error(ts_test, preds))
+    print('MSE:', metrics.mean_squared_error(ts_test, preds))
+    print('RMSE:', np.sqrt(metrics.mean_squared_error(ts_test, preds)))
+    print('R2:', metrics.r2_score(ts_test, preds))
