@@ -59,3 +59,49 @@ def metrics_summary(ts_test, preds):
     print('MSE:', metrics.mean_squared_error(ts_test, preds))
     print('RMSE:', np.sqrt(metrics.mean_squared_error(ts_test, preds)))
     print('R2:', metrics.r2_score(ts_test, preds))
+
+
+def reverse_diff(ts, preds, split_index, period):
+    # reconstructs the test TS based on the train and predictions
+    # the TS was converted into stationary using differencing of 1 and 12
+    # uses the formulation
+    #x'(n) = (x(n) - x(n-1)) - (x(n-12) - x(n-13))
+    # <=> x'(n) = x(n) - x(n-1) - x(n-12) + x(n-13)
+    # <=> x(n) = x'(n) + x(n-1) + x(n-12) - x(n-13)
+    time_series = pd.concat((ts, preds))
+    for i in range(len(ts), len(time_series)):
+        time_series.iloc[i] = time_series.iloc[i] + time_series.iloc[i-1] + time_series.iloc[i-period] - time_series.iloc[i-(period+1)]
+    return time_series[split_index:]
+
+
+def get_predictions_from_horizon(model_fitted, forecast_horizon, ts, ts_test):
+    """ Merge predictions according to a certain forecast horizon"""
+    predictions = pd.Series()
+    for i in range((len(ts_test) // forecast_horizon)+ 1):
+        model_fitted = model_fitted.apply(pd.concat([ts, ts_test.iloc[:i*forecast_horizon]]))
+        preds = model_fitted.forecast(steps=forecast_horizon)
+        predictions = pd.concat([predictions, preds])
+    predictions = predictions.iloc[:len(ts_test)]
+    return predictions
+
+
+def get_multi_predictions_from_horizon(fitted_model, train_data, test_data, explanatory_ts, ts, ts_test, forecast_horizon):
+    """ Merge predictions according to a certain forecast horizon for multivariate data"""
+    predictions = pd.Series()
+    for i in range(len(ts_test) // forecast_horizon + 1):
+        endog = pd.concat([ts, ts_test.iloc[:i*forecast_horizon]])
+        exog = pd.concat([train_data[explanatory_ts], test_data.iloc[:i*forecast_horizon][explanatory_ts]])
+        fitted_model = fitted_model.apply(endog=endog, exog=exog)
+        aux = test_data[explanatory_ts].iloc[i*forecast_horizon:(i+1)*forecast_horizon]
+        preds = fitted_model.forecast(steps=len(aux), exog=aux)
+        predictions = pd.concat([predictions, preds])
+    return predictions
+
+def get_prediction_from_horizon_varmax(model_fitted, train_multi_data, test_multi_data, forecast_horizon):
+    predictions = pd.DataFrame()
+    for i in range(len(test_multi_data) // forecast_horizon + 1):
+        model_fitted = model_fitted.apply(pd.concat([train_multi_data, test_multi_data.iloc[:i*forecast_horizon]]))
+        preds = model_fitted.forecast(steps=forecast_horizon)
+        predictions = pd.concat([predictions, preds])
+    predictions = predictions.iloc[:len(test_multi_data)]
+    return predictions
