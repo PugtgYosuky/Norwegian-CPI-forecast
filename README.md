@@ -8,11 +8,13 @@ Joana Simões, Nº 2019217013, <joanasimoes@student.dei.uc.pt>
 
 ## Files
 
-- ts-analysis.ipynb: Main notebook were the basic analysis of the TS and transformations are carried out;
+- ts-analysis.ipynb: Notebook with the basic analysis of the TS and transformations are carried out;
 - ts-analysis-multiplicative.ipynb:  Copy of the first one but testing the multiplicative model instead of the additive model for decomposing;
-- ts-models.ipynb: Test of different linear models to describe the stationary Time Series;
+- ts-models.ipynb: Test of different forecasting models to describe the stationary Time Series;
 - preprocess_timeseries.ipynb: convert the original data (CPITimeSeries/CPUTimeSeries.csv) into the correct format and select only the overall CPI index feature for each country;
 - utils.py: includes some functions necessary to run the notebooks
+- ASTP_milestone2_report.pdf: Final report of the project.
+- ASTP_milestone1-report.pdf: Report of the 1st delivery
 
 ## Info
 
